@@ -3,7 +3,7 @@ print("Program running")
 import cv2
 import mediapipe as mp
 import pyautogui as pag
-from gestures import get_fingers_up
+from gestures import get_fingers_up, move_mouse, left_click_mouse
 from functions import get_fps
 
 prev_time = 0
@@ -46,12 +46,22 @@ while True:
     if result.multi_hand_landmarks:
         for hand_landmarks in result.multi_hand_landmarks:
             try:        
-                print(get_fingers_up(hand_landmarks, frame.shape))
+                mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+
+
+                fingers_up = get_fingers_up(hand_landmarks, frame.shape)
+                print(fingers_up)
+            
+                #Moving the mouse
+                move_mouse(hand_landmarks, fingers_up, frame.shape, frame)
+
+                #clicking the mouse
+                left_click_mouse(fingers_up, frame, frame.shape, hand_landmarks)
+                
             except Exception as e:
                 print(e)
 
             #printing landmarks
-            mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
     else:
         print("No hand")
 
