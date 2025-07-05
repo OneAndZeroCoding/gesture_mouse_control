@@ -2,7 +2,9 @@ print("Program running")
 
 import cv2
 import mediapipe as mp
-import time #to show fps
+import pyautogui as pag
+from gestures import get_fingers_up
+from functions import get_fps
 
 prev_time = 0
 
@@ -30,30 +32,34 @@ while True:
         print("Failed to capture image.")
         break
 
-    curr_time = time.time()
-    fps = 1/(curr_time - prev_time)
-    prev_time = curr_time
+    fps, prev_time = get_fps(prev_time)
 
     frame = cv2.flip(frame, 1)
 
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) #converting from BGR to RGB
-    cv2.putText(frame, f'FPS: {int(fps)}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1)
+    cv2.putText(frame, f'FPS: {fps}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1)
 
     #processing hands results
     result = hands.process(rgb_frame)
-    print(result.multi_hand_landmarks)
 
     #drawing handLandmarks
     if result.multi_hand_landmarks:
         for hand_landmarks in result.multi_hand_landmarks:
-            #print(hand_landmarks)
+            try:        
+                print(get_fingers_up(hand_landmarks, frame.shape))
+            except Exception as e:
+                print(e)
+
+            #printing landmarks
             mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+    else:
+        print("No hand")
 
     cv2.imshow("HandTracking", frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-    
+
 
 cap.release()
 cv2.destroyAllWindows()
