@@ -51,7 +51,7 @@ while True:
 
     cv2.imshow("HandTracking", frame)
 
-    if cv2.waitKey(3000) & 0xFF == ord('q'):
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
     
 
