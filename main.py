@@ -3,8 +3,8 @@ print("Program running")
 import cv2
 import mediapipe as mp
 import pyautogui as pag
-from gestures import get_fingers_up, move_mouse, left_click_mouse
-from functions import get_fps
+from gestures import get_fingers_up, move_mouse, left_click_mouse, right_click_mouse, mouse_scroll_down, mouse_scroll_up
+from functions import get_fps, no_hand_text, show_process_info
 
 prev_time = 0
 
@@ -38,6 +38,10 @@ while True:
 
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) #converting from BGR to RGB
     cv2.putText(frame, f'FPS: {fps}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1)
+    try:
+        show_process_info(frame)
+    except Exception as e:
+        print(e)
 
     #processing hands results
     result = hands.process(rgb_frame)
@@ -55,15 +59,26 @@ while True:
                 #Moving the mouse
                 move_mouse(hand_landmarks, fingers_up, frame.shape, frame)
 
-                #clicking the mouse
+                #left clicking the mouse
                 left_click_mouse(fingers_up, frame, frame.shape, hand_landmarks)
-                
+
+                #right clicking the mouse
+                right_click_mouse(fingers_up, frame, frame.shape, hand_landmarks)
+
+                #mouse scroll down
+                mouse_scroll_down(fingers_up, frame, frame.shape, hand_landmarks)
+
+                #mouse scroll up
+                mouse_scroll_up(fingers_up, frame, frame.shape, hand_landmarks)
+
             except Exception as e:
                 print(e)
 
             #printing landmarks
     else:
         print("No hand")
+        no_hand_text(frame, frame.shape)
+
 
     cv2.imshow("HandTracking", frame)
 

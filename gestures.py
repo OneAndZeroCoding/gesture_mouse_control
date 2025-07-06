@@ -5,9 +5,11 @@ import time
 
 screenW, screenH = pag.size()
 last_click_time = 0
-CLICK_COOLDOWN = 0.5
+LEFT_CLICK_COOLDOWN = 0.5
+RIGHT_CLICK_COOLDOWN = 2
 prev_mouse_x, prev_mouse_y = 0,0
-MOTION_THRESHOLD = 7
+MOTION_THRESHOLD = 15
+SCROLL_SPEED = 50
 
 #function to return list of 1/0 - 1=up, 0=down 
 def get_fingers_up(hand_landmarks, frame_shape):
@@ -65,7 +67,7 @@ def left_click_mouse(fingers_up, frame, frame_shape, hand_landmarks):
     current_time = time.time()
 
     if fingers_up == [0,1,1,0,0]:
-        if current_time - last_click_time > CLICK_COOLDOWN:
+        if current_time - last_click_time > LEFT_CLICK_COOLDOWN:
             pag.click(button='left')
             print("Left click")
             last_click_time = current_time
@@ -75,3 +77,46 @@ def left_click_mouse(fingers_up, frame, frame_shape, hand_landmarks):
         h,w,_ = frame_shape
         cx, cy = int(middle_tip.x * w), int(middle_tip.y * h)
         cv2.circle(frame, (cx, cy), 10, (0,0,225),cv2.FILLED)
+
+def right_click_mouse(fingers_up, frame, frame_shape, hand_landmarks):
+
+    global last_click_time
+    current_time = time.time()
+
+
+    if fingers_up == [1,0,0,0,0]:
+        if current_time - last_click_time > RIGHT_CLICK_COOLDOWN:
+            pag.click(button='right')
+            print("Right click")
+            last_click_time = current_time
+        h,w,_ = frame_shape
+        cx, cy = int(hand_landmarks.landmark[4].x * w), int(hand_landmarks.landmark[4].y * h)
+        cv2.circle(frame, (cx, cy), 10, (0,0,255), cv2.FILLED)
+
+
+def mouse_scroll_down(fingers_up, frame, frame_shape, hand_landmarks):
+
+    if fingers_up == [0,0,0,0,1]:
+        pag.scroll(clicks=(-1 * SCROLL_SPEED))
+        print("Scrolling down")
+        h,w,_ = frame_shape
+        pinky_tip = hand_landmarks.landmark[20]
+        cx, cy = int(pinky_tip.x * w), int(pinky_tip.y * h)
+        #feedback
+        cv2.circle(frame, (cx,cy), 10, (255,0,0), cv2.FILLED)
+
+
+def mouse_scroll_up(fingers_up, frame, frame_shape, hand_landmarks):
+
+    if fingers_up == [0,0,0,1,1]:
+        pag.scroll(clicks=SCROLL_SPEED)
+        print("Scrolling down")
+        h,w,_ = frame_shape
+        pinky_tip = hand_landmarks.landmark[20]
+        ring_tip = hand_landmarks.landmark[16]
+        pcx, pcy = int(pinky_tip.x * w), int(pinky_tip.y * h)
+        rcx, rcy = int(ring_tip.x * w), int(ring_tip.y * h)
+        #feedback
+        cv2.circle(frame, (pcx,pcy), 10, (255,0,0), cv2.FILLED)
+        cv2.circle(frame, (rcx,rcy), 10, (255,0,0), cv2.FILLED)
+        
